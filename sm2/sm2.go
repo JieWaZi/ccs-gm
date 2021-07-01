@@ -17,18 +17,18 @@ import (
 type PublicKey struct {
 	elliptic.Curve
 	X, Y        *big.Int
-	PreComputed *[37][64 * 8]uint64 //precomputation
+	PreComputed *[37][64 * 8]uint64 // precomputation
 }
 
 type PrivateKey struct {
 	PublicKey
 	D    *big.Int
-	DInv *big.Int //(1+d)^-1
+	DInv *big.Int // (1+d)^-1
 }
 
 var generateRandK = _generateRandK
 
-//optMethod includes some optimized methods.
+// optMethod includes some optimized methods.
 type optMethod interface {
 	// CombinedMult implements fast multiplication S1*g + S2*p (g - generator, p - arbitrary point)
 	CombinedMult(Precomputed *[37][64 * 8]uint64, baseScalar, scalar []byte) (x, y *big.Int)
@@ -69,7 +69,7 @@ func GenerateKey(rand io.Reader) (*PrivateKey, error) {
 	priv := new(PrivateKey)
 	priv.PublicKey.Curve = c
 	priv.D = k
-	//(1+d)^-1
+	// (1+d)^-1
 	priv.DInv = new(big.Int).Add(k, one)
 	priv.DInv.ModInverse(priv.DInv, c.Params().N)
 	priv.PublicKey.X, priv.PublicKey.Y = c.ScalarBaseMult(k.Bytes())
@@ -95,11 +95,11 @@ func _generateRandK(rand io.Reader, c elliptic.Curve) (k *big.Int) {
 
 func getZById(pub *PublicKey, id []byte) []byte {
 	c := P256Sm2()
-	var lena = uint16(len(id) * 8) //bit len of IDA
+	var lena = uint16(len(id) * 8) // bit len of IDA
 	var ENTLa = []byte{byte(lena >> 8), byte(lena)}
 	var z = make([]byte, 0, 1024)
 
-	//判断公钥x,y坐标长度是否小于32字节，若小于则在前面补0
+	// 判断公钥x,y坐标长度是否小于32字节，若小于则在前面补0
 	xBuf := pub.X.Bytes()
 	yBuf := pub.Y.Bytes()
 
@@ -116,28 +116,28 @@ func getZById(pub *PublicKey, id []byte) []byte {
 
 	z = append(z, ENTLa...)
 	z = append(z, id...)
-	z = append(z, SM2PARAM_A...)
+	z = append(z, sm2P256.RInverse.Bytes()...)
 	z = append(z, c.Params().B.Bytes()...)
 	z = append(z, c.Params().Gx.Bytes()...)
 	z = append(z, c.Params().Gy.Bytes()...)
 	z = append(z, xBuf...)
 	z = append(z, yBuf...)
 
-	//h := sm3.New()
+	// h := sm3.New()
 	hash := sm3.SumSM3(z)
 	return hash
 }
 
-//Za = sm3(ENTL||IDa||a||b||Gx||Gy||Xa||Xy)
+// Za = sm3(ENTL||IDa||a||b||Gx||Gy||Xa||Xy)
 func getZ(pub *PublicKey) []byte {
 	return getZById(pub, []byte("1234567812345678"))
 }
 
 func Sign(rand io.Reader, priv *PrivateKey, msg []byte) (r, s *big.Int, err error) {
-	//if len(hash) < 32 {
+	// if len(hash) < 32 {
 	//	err = errors.New("The length of hash has short than what SM2 need.")
 	//	return
-	//}
+	// }
 
 	var m = make([]byte, 32+len(msg))
 	copy(m, getZ(&priv.PublicKey))
@@ -173,10 +173,10 @@ func Sign(rand io.Reader, priv *PrivateKey, msg []byte) (r, s *big.Int, err erro
 }
 
 func SignWithDigest(rand io.Reader, priv *PrivateKey, digest []byte) (r, s *big.Int, err error) {
-	//if len(hash) < 32 {
+	// if len(hash) < 32 {
 	//	err = errors.New("The length of hash has short than what SM2 need.")
 	//	return
-	//}
+	// }
 	e := new(big.Int).SetBytes(digest)
 	k := generateRandK(rand, priv.PublicKey.Curve)
 
@@ -223,15 +223,15 @@ func Verify(pub *PublicKey, msg []byte, r, s *big.Int) bool {
 	var m = make([]byte, 32+len(msg))
 	copy(m, getZ(pub))
 	copy(m[32:], msg)
-	//h := sm3.New()
-	//hash := h.Sum(m)
+	// h := sm3.New()
+	// hash := h.Sum(m)
 	hash := sm3.SumSM3(m)
 	e := new(big.Int).SetBytes(hash[:])
 
 	t := new(big.Int).Add(r, s)
 
 	// Check if implements S1*g + S2*p
-	//Using fast multiplication CombinedMult.
+	// Using fast multiplication CombinedMult.
 	var x1 *big.Int
 	if opt, ok := c.(optMethod); ok && (pub.PreComputed != nil) {
 		x1, _ = opt.CombinedMult(pub.PreComputed, s.Bytes(), t.Bytes())
@@ -264,7 +264,7 @@ func VerifyWithDigest(pub *PublicKey, digest []byte, r, s *big.Int) bool {
 
 	t := new(big.Int).Add(r, s)
 	// Check if implements S1*g + S2*p
-	//Using fast multiplication CombinedMult.
+	// Using fast multiplication CombinedMult.
 	var x1 *big.Int
 	if opt, ok := c.(optMethod); ok && (pub.PreComputed != nil) {
 		x1, _ = opt.CombinedMult(pub.PreComputed, s.Bytes(), t.Bytes())
@@ -292,7 +292,7 @@ func (z *zr) Read(dst []byte) (n int, err error) {
 
 var zeroReader = &zr{}
 
-//func OptSign(rand io.Reader, priv *PrivateKey, msg []byte) (r, s *big.Int, err error) {
+// func OptSign(rand io.Reader, priv *PrivateKey, msg []byte) (r, s *big.Int, err error) {
 //	//var one = new(big.Int).SetInt64(1)
 //	//if len(hash) < 32 {
 //	//	err = errors.New("The length of hash has short than what SM2 need.")
@@ -329,9 +329,9 @@ var zeroReader = &zr{}
 //	s.Mod(s, n)
 //
 //	return
-//}
+// }
 //
-//func OptVerify(pub *PublicKey, msg []byte, r, s *big.Int) bool {
+// func OptVerify(pub *PublicKey, msg []byte, r, s *big.Int) bool {
 //	c := pub.Curve
 //	N := c.Params().N
 //
@@ -372,4 +372,4 @@ var zeroReader = &zr{}
 //	x = x.Mod(x, n)
 //
 //	return x.Cmp(r) == 0
-//}
+// }

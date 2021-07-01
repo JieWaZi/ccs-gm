@@ -3,6 +3,7 @@ package sm2
 import (
 	"crypto/elliptic"
 	"math/big"
+	"sync"
 )
 
 /** 学习标准库p256的优化方法实现sm2的快速版本
@@ -36,7 +37,7 @@ type sm2P256Curve struct {
 	a, b, gx, gy sm2P256FieldElement
 }
 
-// var initonce sync.Once
+var initonce sync.Once
 var sm2P256 sm2P256Curve
 
 type sm2P256FieldElement [9]uint32
