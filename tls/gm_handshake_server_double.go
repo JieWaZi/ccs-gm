@@ -13,8 +13,8 @@ import (
 	"crypto/subtle"
 	"errors"
 	"fmt"
-	"github.com/Hyperledger-TWGC/ccs-gm/sm2"
-	"github.com/Hyperledger-TWGC/ccs-gm/x509"
+	"github.com/JieWaZi/ccs-gm/sm2"
+	"github.com/JieWaZi/ccs-gm/x509"
 	"io"
 	"sync/atomic"
 )

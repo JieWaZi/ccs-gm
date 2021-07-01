@@ -3,7 +3,7 @@ package utils
 import (
 	"bytes"
 	"crypto/rand"
-	"github.com/Hyperledger-TWGC/ccs-gm/sm2"
+	"github.com/JieWaZi/ccs-gm/sm2"
 	"testing"
 )
 
