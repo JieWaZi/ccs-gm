@@ -221,9 +221,9 @@ func TestDecrypt(t *testing.T) {
 
 	sk, _ := new(big.Int).SetString("14616ccf33a996453b4c7e8b03027af00d84a0fd89ceff38effac1595c68433a", 16)
 
-	pkx, pky := P256().ScalarBaseMult(sk.Bytes())
+	pkx, pky := P256Sm2().ScalarBaseMult(sk.Bytes())
 
-	priv := PrivateKey{PublicKey{P256(), pkx, pky, nil}, sk, nil}
+	priv := PrivateKey{PublicKey{P256Sm2(), pkx, pky, nil}, sk, nil}
 
 	plain, err := Decrypt(c, &priv)
 	if err != nil {

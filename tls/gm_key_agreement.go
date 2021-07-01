@@ -222,7 +222,7 @@ func (ka *ecdheKeyAgreementGM) processServerKeyExchange(config *Config, clientHe
 	}
 
 	//according to GMT0024, we don't care about
-	curve := sm2.P256()
+	curve := sm2.P256Sm2()
 	ka.x, ka.y = elliptic.Unmarshal(curve, publicKey) // Unmarshal also checks whether the given point is on the curve
 	if ka.x == nil {
 		return errServerKeyExchange

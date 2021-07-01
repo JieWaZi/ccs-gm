@@ -60,7 +60,7 @@ func randFieldElement(c elliptic.Curve, rand io.Reader) (k *big.Int, err error) 
 }
 
 func GenerateKey(rand io.Reader) (*PrivateKey, error) {
-	c := P256()
+	c := P256Sm2()
 
 	k, err := randFieldElement(c, rand)
 	if err != nil {
@@ -94,7 +94,7 @@ func _generateRandK(rand io.Reader, c elliptic.Curve) (k *big.Int) {
 }
 
 func getZById(pub *PublicKey, id []byte) []byte {
-	c := P256()
+	c := P256Sm2()
 	var lena = uint16(len(id) * 8) //bit len of IDA
 	var ENTLa = []byte{byte(lena >> 8), byte(lena)}
 	var z = make([]byte, 0, 1024)

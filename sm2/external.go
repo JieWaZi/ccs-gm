@@ -13,12 +13,12 @@ import (
 )
 
 type Sm2PrivateKey struct {
-	D *big.Int //sk
+	D *big.Int // sk
 }
 
 type Sm2PublicKey struct {
-	X *big.Int //pk.X
-	Y *big.Int //pk.Y
+	X *big.Int // pk.X
+	Y *big.Int // pk.Y
 }
 
 type sm2Signature struct {
@@ -70,7 +70,7 @@ func Sm2Sign(sk, pk, msg []byte) ([]byte, error) {
 	}
 
 	var priv PrivateKey
-	priv.Curve = P256()
+	priv.Curve = P256Sm2()
 	priv.D = sm2SK.D
 	priv.X = sm2PK.X
 	priv.Y = sm2PK.Y
@@ -98,7 +98,7 @@ func Sm2Verify(sign, pk, msg []byte) bool {
 	}
 
 	var PK PublicKey
-	PK.Curve = P256()
+	PK.Curve = P256Sm2()
 	PK.X = sm2PK.X
 	PK.Y = sm2PK.Y
 
